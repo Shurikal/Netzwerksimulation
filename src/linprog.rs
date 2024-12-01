@@ -3,7 +3,7 @@ use std::error::Error;
 use chrono::{DateTime, Datelike};
 use chrono_tz::Tz;
 use good_lp::{
-    clarabel, variable, variables, Constraint, Expression, Solution, SolverModel, Variable,
+    highs, variable, variables, Constraint, Expression, Solution, SolverModel, Variable,
 };
 
 use crate::Entity;
@@ -61,15 +61,20 @@ pub fn solve(mut entities: Vec<Entity>, timesteps: usize) -> Result<Vec<Entity>,
                     let mut storage_min_eq: Expression = 0.into();
                     let mut storage_max_eq: Expression = 0.into();
 
+                    let mutually_exclusive = problem_vars.add(variable().binary());
+
+                    // Constraints to enforce mutual exclusivity
+                    constraints.push((1.0 * produced).leq(1.0 * mutually_exclusive)); // produced <= binary_var
+                    constraints.push((1.0 * consumed).leq(1.0 * (1.0 - mutually_exclusive))); // consumed <= 1 - binary_var
 
                     storage_min_eq += storage.start_capacity;
+                    storage_max_eq += storage.start_capacity;
                     
                     // storage balance
                     for j in 0..timestep+1 {
-                        println!("j:{}, t:{}", j, timestep);
-                        storage_min_eq += storage.consumed_var[j] * storage.get_eff_cons(j) - storage.produced_var[j];
+                        storage_min_eq += storage.consumed_var[j] * storage.get_eff_cons(j) * storage.get_power_cons(timestep) - storage.produced_var[j] * storage.get_power_prod(timestep);
 
-                        storage_max_eq += storage.consumed_var[j] * storage.get_eff_cons(j) - storage.produced_var[j];
+                        storage_max_eq += storage.consumed_var[j] * storage.get_eff_cons(j) * storage.get_power_cons(timestep) - storage.produced_var[j] * storage.get_power_prod(timestep);
                     }
 
                     constraints.push(storage_min_eq.geq(0));
@@ -78,8 +83,7 @@ pub fn solve(mut entities: Vec<Entity>, timesteps: usize) -> Result<Vec<Entity>,
                     node_eq += produced
                         * storage.get_power_prod(timestep)
                         * storage.get_eff_prod(timestep)
-                        - consumed * storage.get_power_cons(timestep)
-                            / storage.get_eff_cons(timestep);
+                        - consumed * storage.get_power_cons(timestep);
 
                     to_minimize += consumed
                         * storage.get_cost_cons(timestep)
@@ -116,7 +120,7 @@ pub fn solve(mut entities: Vec<Entity>, timesteps: usize) -> Result<Vec<Entity>,
 
 
     let solution = constraints.into_iter().fold(
-        problem_vars.minimise(to_minimize).using(clarabel),
+        problem_vars.minimise(to_minimize).using(highs),
         |solution, constraint| solution.with(constraint),
     );
 
@@ -154,11 +158,11 @@ pub fn solve(mut entities: Vec<Entity>, timesteps: usize) -> Result<Vec<Entity>,
                             );
 
                             storage.produced.push(
-                                solution.value(storage.produced_var[i]) * storage.get_power_prod(i),
+                                solution.value(storage.produced_var[i]) * storage.get_power_prod(i) * storage.get_eff_prod(i),
                             );
 
                             stored += storage.consumed[i] * storage.get_eff_cons(i)
-                                - storage.produced[i];
+                                - storage.produced[i] / storage.get_eff_prod(i);
                             storage.stored.push(stored);
                         }
                     }

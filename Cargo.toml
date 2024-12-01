@@ -19,5 +19,5 @@ ndarray = "0.16.1"
 reqwest = { version="0.12.9", features=["json", "blocking"] }
 serde = { version = "1.0.214", features=["derive"] }
 serde_json = "1.0.132"
-good_lp = {version="1.10.0", features=["clarabel"], default-features = false }
+good_lp = {version="1.10.0", features=["highs"], default-features = false }
 float_eq = "1.0.1"

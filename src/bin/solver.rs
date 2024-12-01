@@ -27,23 +27,23 @@ fn main() {
 
     let grid = Grid::new(
         "Grid".to_string(),
-        vec![1.0],
-        vec![2.0],
+        vec![10.0],
+        vec![10.0],
 
-        vec![1.0],
-        vec![2.0],
+        vec![10.0],
+        vec![10.0],
         
     );
 
     let city = Consumer::new(
-        vec![1.0, 0.5],
+        vec![0.5,1.0],
         vec![1.0],
         vec![0.0],
         "City".to_string(),
     );
 
     let pv = Producer::new(
-        vec![2.0],
+        vec![1.0,0.5],
         vec![1.0],
         vec![0.0],
         false,
@@ -51,25 +51,25 @@ fn main() {
     );
 
     let storage = Storage::new(
-        vec![5.0],
-        vec![4.0],
-        vec![0.9],
-        vec![4.0],
-        vec![0.75],
+        vec![1.0],
         vec![0.0],
-        20.0,
-        4.0,
+        vec![1.0],
+        vec![1.0],
+        vec![1.0],
+        vec![0.0],
+        5.0,
+        0.0,
         "Storage".to_string(),
     );
 
     let entities = vec![
         //Entity::Grid(grid),
         Entity::Consumer(city),
-        //Entity::Producer(pv),
+        Entity::Producer(pv),
         Entity::Storage(storage),
     ];
 
-    let timesteps: usize = 2;
+    let timesteps: usize = 10;
 
     let result = solve(entities, timesteps);
 

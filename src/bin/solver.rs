@@ -51,14 +51,14 @@ fn main() {
     );
 
     let storage = Storage::new(
-        vec![1.0],
-        vec![0.0],
-        vec![1.0],
-        vec![1.0],
-        vec![1.0],
+        vec![5.0],
+        vec![4.0],
+        vec![0.9],
+        vec![4.0],
+        vec![0.75],
         vec![0.0],
         20.0,
-        10.0,
+        4.0,
         "Storage".to_string(),
     );
 
@@ -69,7 +69,7 @@ fn main() {
         Entity::Storage(storage),
     ];
 
-    let timesteps: usize = 24;
+    let timesteps: usize = 2;
 
     let result = solve(entities, timesteps);
 

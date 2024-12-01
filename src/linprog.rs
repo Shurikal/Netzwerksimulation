@@ -52,22 +52,28 @@ pub fn solve(mut entities: Vec<Entity>, timesteps: usize) -> Result<Vec<Entity>,
                         * producer.get_power_prod(timestep);
                 }
                 Entity::Storage(storage) => {
-                    let consumed = problem_vars.add(variable().min(0).max(1.0));
-                    let produced = problem_vars.add(variable().min(0).max(1.0));
+                    let consumed = problem_vars.add(variable().min(0).max(1.0).name(format!("{}-{}-c", storage.name, timestep)));
+                    let produced = problem_vars.add(variable().min(0).max(1.0).name(format!("{}-{}-p", storage.name, timestep)));
 
                     storage.consumed_var.push(consumed);
                     storage.produced_var.push(produced);
 
-                    let mut storage_eq: Expression = 0.into();
+                    let mut storage_min_eq: Expression = 0.into();
+                    let mut storage_max_eq: Expression = 0.into();
 
-                    storage_eq += storage.start_capacity;
+
+                    storage_min_eq += storage.start_capacity;
+                    
                     // storage balance
-                    for j in 0..timestep {
-                        storage_eq += storage.produced_var[j] * storage.get_eff_prod(j)
-                            - storage.consumed_var[j] ;
+                    for j in 0..timestep+1 {
+                        println!("j:{}, t:{}", j, timestep);
+                        storage_min_eq += storage.consumed_var[j] * storage.get_eff_cons(j) - storage.produced_var[j];
+
+                        storage_max_eq += storage.consumed_var[j] * storage.get_eff_cons(j) - storage.produced_var[j];
                     }
 
-                    constraints.push(storage_eq.geq(0));
+                    constraints.push(storage_min_eq.geq(0));
+                    constraints.push(storage_max_eq.leq(storage.storage_capacity));
 
                     node_eq += produced
                         * storage.get_power_prod(timestep)
@@ -100,13 +106,20 @@ pub fn solve(mut entities: Vec<Entity>, timesteps: usize) -> Result<Vec<Entity>,
             }
         }
 
-        constraints.push(node_eq.eq(0));
+        constraints.push(node_eq.eq(0).set_name(format!("Kirchhoff @{}", timestep)));
     }
+
+    for constraint in constraints.iter() {
+        // check if name exists
+        println!("{:?}", constraint);
+    }
+
 
     let solution = constraints.into_iter().fold(
         problem_vars.minimise(to_minimize).using(clarabel),
         |solution, constraint| solution.with(constraint),
     );
+
 
     let solution = solution.solve();
 
@@ -131,16 +144,22 @@ pub fn solve(mut entities: Vec<Entity>, timesteps: usize) -> Result<Vec<Entity>,
                         }
                     }
                     Entity::Storage(storage) => {
-                        for (i, consumed_var) in storage.consumed_var.iter().enumerate() {
-                            storage
-                                .consumed
-                                .push(solution.value(*consumed_var) * storage.get_power_cons(i));
-                        }
+                        let n_entries = storage.produced_var.len();
 
-                        for (i, produced_var) in storage.produced_var.iter().enumerate() {
-                            storage
-                                .produced
-                                .push(solution.value(*produced_var) * storage.get_power_prod(i));
+                        let mut stored = storage.start_capacity;
+
+                        for i in 0..n_entries {
+                            storage.consumed.push(
+                                solution.value(storage.consumed_var[i]) * storage.get_power_cons(i),
+                            );
+
+                            storage.produced.push(
+                                solution.value(storage.produced_var[i]) * storage.get_power_prod(i),
+                            );
+
+                            stored += storage.consumed[i] * storage.get_eff_cons(i)
+                                - storage.produced[i];
+                            storage.stored.push(stored);
                         }
                     }
                     Entity::Grid(grid) => {

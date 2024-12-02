@@ -1,8 +1,7 @@
 use good_lp::Variable;
-use serde::{ser::SerializeSeq, Serialize};
+use serde::Serialize;
 
 pub mod linprog;
-
 
 
 #[derive(Debug, Serialize)]

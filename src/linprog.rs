@@ -1,9 +1,7 @@
 use std::error::Error;
 
-use chrono::{DateTime, Datelike};
-use chrono_tz::Tz;
 use good_lp::{
-    highs, variable, variables, Constraint, Expression, Solution, SolverModel, Variable,
+    highs, variable, variables, Constraint, Expression, Solution, SolverModel,
 };
 
 use crate::Entity;
@@ -99,6 +97,13 @@ pub fn solve(mut entities: Vec<Entity>, timesteps: usize) -> Result<Vec<Entity>,
                     grid.consumed_var.push(consumed);
                     grid.produced_var.push(produced);
 
+
+                    let mutually_exclusive = problem_vars.add(variable().binary());
+
+                    // Constraints to enforce mutual exclusivity
+                    constraints.push((1.0 * produced).leq(1.0 * mutually_exclusive)); // produced <= binary_var
+                    constraints.push((1.0 * consumed).leq(1.0 * (1.0 - mutually_exclusive))); // consumed <= 1 - binary_var
+
                     node_eq += produced * grid.get_power_prod(timestep)
                         - consumed * grid.get_power_cons(timestep);
 
@@ -112,12 +117,6 @@ pub fn solve(mut entities: Vec<Entity>, timesteps: usize) -> Result<Vec<Entity>,
 
         constraints.push(node_eq.eq(0).set_name(format!("Kirchhoff @{}", timestep)));
     }
-
-    for constraint in constraints.iter() {
-        // check if name exists
-        println!("{:?}", constraint);
-    }
-
 
     let solution = constraints.into_iter().fold(
         problem_vars.minimise(to_minimize).using(highs),

@@ -36,14 +36,14 @@ fn main() {
     );
 
     let city = Consumer::new(
-        vec![0.5,1.0],
+        vec![0.5,1.0,2.0],
         vec![1.0],
         vec![0.0],
         "City".to_string(),
     );
 
     let pv = Producer::new(
-        vec![1.0,0.5],
+        vec![2.0,1.0],
         vec![1.0],
         vec![0.0],
         false,
@@ -63,7 +63,7 @@ fn main() {
     );
 
     let entities = vec![
-        //Entity::Grid(grid),
+        Entity::Grid(grid),
         Entity::Consumer(city),
         Entity::Producer(pv),
         Entity::Storage(storage),

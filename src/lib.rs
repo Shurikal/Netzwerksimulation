@@ -4,6 +4,16 @@ use serde::Serialize;
 pub mod linprog;
 
 
+
+fn check_eff_vec(eff: &Vec<f64>) {
+    for eff in eff.iter() {
+        if *eff < 0.0 || *eff > 1.0 {
+            panic!("Efficiency must be between 0 and 1");
+        }
+    }
+}
+
+
 #[derive(Debug, Serialize)]
 pub struct Consumer {
     pub power_cons: Vec<f64>,
@@ -14,6 +24,8 @@ pub struct Consumer {
     #[serde(skip_serializing)]
     pub consumed_var: Vec<Variable>,
     pub consumed: Vec<f64>,
+
+    pub entity_type: String,
 }
 
 impl Consumer {
@@ -23,6 +35,7 @@ impl Consumer {
         cost_cons: Vec<f64>,
         name: String,
     ) -> Self {
+        check_eff_vec(&eff_cons);
         Consumer {
             power_cons,
             eff_cons,
@@ -30,6 +43,7 @@ impl Consumer {
             cost_cons,
             consumed_var: vec![],
             consumed: vec![],
+            entity_type: "Consumer".to_string(),
         }
     }
 
@@ -49,9 +63,24 @@ impl Consumer {
     }
 }
 
+impl Serialize for Entity {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        match self {
+            Entity::Consumer(consumer) => consumer.serialize(serializer),
+            Entity::Producer(producer) => producer.serialize(serializer),
+            Entity::Storage(storage) => storage.serialize(serializer),
+            Entity::Grid(grid) => grid.serialize(serializer),
+        }
+    }
+}
+
 #[derive(Debug, Serialize)]
 pub struct Producer {
 
+    pub entity_type: String,
     pub can_be_disabled: bool,
     pub power_prod: Vec<f64>,
     pub eff_prod: Vec<f64>,
@@ -73,6 +102,7 @@ impl Producer {
         name: String,
 
     ) -> Self {
+        check_eff_vec(&eff_prod);
         Producer {
             power_prod,
             eff_prod,
@@ -81,6 +111,7 @@ impl Producer {
             can_be_disabled,
             produced_var: vec![],
             produced: vec![],
+            entity_type: "Producer".to_string(),
         }
     }
 
@@ -124,6 +155,8 @@ pub struct Storage {
     pub consumed: Vec<f64>,
     pub stored: Vec<f64>,
 
+    pub entity_type: String,
+
 }
 
 impl Storage {
@@ -140,6 +173,9 @@ impl Storage {
 
         name: String,
     ) -> Self {
+
+        check_eff_vec(&eff_prod);
+        check_eff_vec(&eff_cons);
         Storage {
             power_prod,
             power_cons,
@@ -155,6 +191,7 @@ impl Storage {
             produced: vec![],
             consumed: vec![],
             stored: vec![],
+            entity_type: "Storage".to_string(),
         }
     }
 
@@ -206,6 +243,8 @@ pub struct Grid {
 
     pub produced: Vec<f64>,
     pub consumed: Vec<f64>,
+
+    pub entity_type: String,
 }
 
 impl Grid {
@@ -221,6 +260,7 @@ impl Grid {
             consumed_var: vec![],
             produced: vec![],
             consumed: vec![],
+            entity_type: "Grid".to_string(),
         }
     }
 
@@ -245,7 +285,7 @@ impl Grid {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum Entity {
     Consumer(Consumer),
     Producer(Producer),

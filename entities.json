@@ -1,0 +1,28 @@
+{
+  "entities": [
+    {
+      "name": "Grid",
+      "cost_prod": [1.0],
+      "power_prod": [2.0],
+      "cost_cons": [1.0],
+      "power_cons": [2.0],
+      "entity_type": "Grid"
+    },
+    {
+      "power_cons": [1.0, 0.5],
+      "eff_cons": [1.0],
+      "cost_cons": [0.0],
+      "name": "City",
+      "entity_type": "Consumer"
+    },
+    {
+      "can_be_disabled": false,
+      "power_prod": [2.0],
+      "eff_prod": [1.0],
+      "cost_prod": [0.0],
+      "name": "PV",
+      "entity_type": "Producer"
+    }
+  ],
+  "timesteps": 10
+}

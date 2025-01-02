@@ -3,8 +3,6 @@ use serde::Serialize;
 
 pub mod linprog;
 
-
-
 fn check_eff_vec(eff: &Vec<f64>) {
     for eff in eff.iter() {
         if *eff < 0.0 || *eff > 1.0 {
@@ -12,7 +10,6 @@ fn check_eff_vec(eff: &Vec<f64>) {
         }
     }
 }
-
 
 #[derive(Debug, Serialize)]
 pub struct Consumer {
@@ -79,7 +76,6 @@ impl Serialize for Entity {
 
 #[derive(Debug, Serialize)]
 pub struct Producer {
-
     pub entity_type: String,
     pub can_be_disabled: bool,
     pub power_prod: Vec<f64>,
@@ -100,7 +96,6 @@ impl Producer {
         can_be_disabled: bool,
 
         name: String,
-
     ) -> Self {
         check_eff_vec(&eff_prod);
         Producer {
@@ -145,7 +140,6 @@ pub struct Storage {
 
     pub name: String,
 
-
     #[serde(skip_serializing)]
     pub produced_var: Vec<Variable>,
     #[serde(skip_serializing)]
@@ -156,7 +150,6 @@ pub struct Storage {
     pub stored: Vec<f64>,
 
     pub entity_type: String,
-
 }
 
 impl Storage {
@@ -173,7 +166,6 @@ impl Storage {
 
         name: String,
     ) -> Self {
-
         check_eff_vec(&eff_prod);
         check_eff_vec(&eff_cons);
         Storage {
@@ -235,7 +227,6 @@ pub struct Grid {
     pub cost_cons: Vec<f64>,
     pub power_cons: Vec<f64>,
 
-
     #[serde(skip_serializing)]
     pub produced_var: Vec<Variable>,
     #[serde(skip_serializing)]
@@ -248,7 +239,13 @@ pub struct Grid {
 }
 
 impl Grid {
-    pub fn new(name: String, cost_prod: Vec<f64>, power_prod: Vec<f64>, cost_cons: Vec<f64>, power_cons: Vec<f64>) -> Self {
+    pub fn new(
+        cost_prod: Vec<f64>,
+        power_prod: Vec<f64>,
+        cost_cons: Vec<f64>,
+        power_cons: Vec<f64>,
+        name: String,
+    ) -> Self {
         Grid {
             name,
             cost_prod,

@@ -154,13 +154,14 @@ pub struct Storage {
 
 impl Storage {
     pub fn new(
-        power_prod: Vec<f64>,
-        cost_prod: Vec<f64>,
-        eff_cons: Vec<f64>,
-
-        power_cons: Vec<f64>,
-        eff_prod: Vec<f64>,
         cost_cons: Vec<f64>,
+        eff_cons: Vec<f64>,
+        power_cons: Vec<f64>,
+
+        cost_prod: Vec<f64>,
+        eff_prod: Vec<f64>,
+        power_prod: Vec<f64>,
+
         storage_capacity: f64,
         start_capacity: f64,
 
@@ -169,15 +170,18 @@ impl Storage {
         check_eff_vec(&eff_prod);
         check_eff_vec(&eff_cons);
         Storage {
-            power_prod,
-            power_cons,
-            eff_prod,
+            cost_cons,
             eff_cons,
+            power_cons,
+
+            cost_prod,
+            eff_prod,
+            power_prod,
+
             storage_capacity,
             start_capacity,
             name,
-            cost_prod,
-            cost_cons,
+
             produced_var: vec![],
             consumed_var: vec![],
             produced: vec![],
@@ -221,11 +225,13 @@ impl Storage {
 #[derive(Debug, Serialize)]
 pub struct Grid {
     pub name: String,
-    pub cost_prod: Vec<f64>,
-    pub power_prod: Vec<f64>,
 
-    pub cost_cons: Vec<f64>,
+    pub power_prod: Vec<f64>,
+    pub cost_prod: Vec<f64>,
+
     pub power_cons: Vec<f64>,
+    pub cost_cons: Vec<f64>,
+
 
     #[serde(skip_serializing)]
     pub produced_var: Vec<Variable>,

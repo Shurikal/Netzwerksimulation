@@ -98,11 +98,8 @@ fn main() {
             "Storage" => {
                 let storage = Storage::new(
                     entity
-                        .power_prod
-                        .expect(format!("{} is missing power_prod", entity.name).as_str()),
-                    entity
-                        .cost_prod
-                        .expect(format!("{} is missing cost_prod", entity.name).as_str()),
+                        .cost_cons
+                        .expect(format!("{} is missing cost_cons", entity.name).as_str()),
                     entity
                         .eff_cons
                         .expect(format!("{} is missing eff_cons", entity.name).as_str()),
@@ -110,11 +107,14 @@ fn main() {
                         .power_cons
                         .expect(format!("{} is missing power_cons", entity.name).as_str()),
                     entity
+                        .cost_prod
+                        .expect(format!("{} is missing cost_prod", entity.name).as_str()),
+                    entity
                         .eff_prod
                         .expect(format!("{} is missing eff_prod", entity.name).as_str()),
                     entity
-                        .cost_cons
-                        .expect(format!("{} is missing cost_cons", entity.name).as_str()),
+                        .power_prod
+                        .expect(format!("{} is missing power_prod", entity.name).as_str()),
                     entity
                         .storage_capacity
                         .expect(format!("{} is missing storage_capacity", entity.name).as_str()),

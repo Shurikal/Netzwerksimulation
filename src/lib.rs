@@ -246,10 +246,12 @@ pub struct Grid {
 
 impl Grid {
     pub fn new(
-        cost_prod: Vec<f64>,
-        power_prod: Vec<f64>,
         cost_cons: Vec<f64>,
         power_cons: Vec<f64>,
+
+        cost_prod: Vec<f64>,
+        power_prod: Vec<f64>,
+
         name: String,
     ) -> Self {
         Grid {

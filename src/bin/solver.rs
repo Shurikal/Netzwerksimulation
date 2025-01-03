@@ -47,17 +47,17 @@ fn main() {
             "Grid" => {
                 let grid = Grid::new(
                     entity
-                        .cost_prod
-                        .expect(format!("{} is missing cost_prod", entity.name).as_str()),
-                    entity
-                        .power_prod
-                        .expect(format!("{} is missing power_prod", entity.name).as_str()),
-                    entity
                         .cost_cons
                         .expect(format!("{} is missing cost_cons", entity.name).as_str()),
                     entity
                         .power_cons
                         .expect(format!("{} is missing power_cons", entity.name).as_str()),
+                    entity
+                        .cost_prod
+                        .expect(format!("{} is missing cost_prod", entity.name).as_str()),
+                    entity
+                        .power_prod
+                        .expect(format!("{} is missing power_prod", entity.name).as_str()),
                     entity.name,
                 );
                 entities.push(Entity::Grid(grid));

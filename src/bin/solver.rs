@@ -65,14 +65,14 @@ fn main() {
             "Consumer" => {
                 let consumer = Consumer::new(
                     entity
-                        .power_cons
-                        .expect(format!("{} is missing power_cons", entity.name).as_str()),
+                        .cost_cons
+                        .expect(format!("{} is missing cost_cons", entity.name).as_str()),
                     entity
                         .eff_cons
                         .expect(format!("{} is missing eff_cons", entity.name).as_str()),
                     entity
-                        .cost_cons
-                        .expect(format!("{} is missing cost_cons", entity.name).as_str()),
+                        .power_cons
+                        .expect(format!("{} is missing power_cons", entity.name).as_str()),
                     entity.name,
                 );
                 entities.push(Entity::Consumer(consumer));

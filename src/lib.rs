@@ -27,9 +27,10 @@ pub struct Consumer {
 
 impl Consumer {
     pub fn new(
-        power_cons: Vec<f64>,
-        eff_cons: Vec<f64>,
         cost_cons: Vec<f64>,
+        eff_cons: Vec<f64>,
+        power_cons: Vec<f64>,
+
         name: String,
     ) -> Self {
         check_eff_vec(&eff_cons);

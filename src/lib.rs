@@ -90,9 +90,10 @@ pub struct Producer {
 
 impl Producer {
     pub fn new(
-        power_prod: Vec<f64>,
-        eff_prod: Vec<f64>,
         cost_prod: Vec<f64>,
+        eff_prod: Vec<f64>,
+        power_prod: Vec<f64>,
+
         can_be_disabled: bool,
 
         name: String,

@@ -80,14 +80,14 @@ fn main() {
             "Producer" => {
                 let producer = Producer::new(
                     entity
-                        .power_prod
-                        .expect(format!("{} is missing power_prod", entity.name).as_str()),
+                        .cost_prod
+                        .expect(format!("{} is missing cost_prod", entity.name).as_str()),
                     entity
                         .eff_prod
                         .expect(format!("{} is missing eff_prod", entity.name).as_str()),
                     entity
-                        .cost_prod
-                        .expect(format!("{} is missing cost_prod", entity.name).as_str()),
+                        .power_prod
+                        .expect(format!("{} is missing power_prod", entity.name).as_str()),
                     entity
                         .can_be_disabled
                         .expect(format!("{} is missing can_be_disabled", entity.name).as_str()),

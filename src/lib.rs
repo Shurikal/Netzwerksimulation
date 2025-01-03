@@ -170,6 +170,15 @@ impl Storage {
     ) -> Self {
         check_eff_vec(&eff_prod);
         check_eff_vec(&eff_cons);
+
+        if start_capacity < 0.0 || start_capacity > storage_capacity {
+            panic!("start_capacity must be between 0 and storage_capacity");
+        }
+
+        if storage_capacity <= 0.0 {
+            panic!("storage_capacity must be greater than 0");
+        }
+
         Storage {
             cost_cons,
             eff_cons,

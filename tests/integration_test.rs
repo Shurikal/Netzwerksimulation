@@ -187,23 +187,23 @@ fn two_grids_and_consumer() {
     let timesteps = 4;
 
     entities.push(Entity::Grid(Grid::new(
+        vec![1.0,0.0],
         vec![1.0],
+        vec![1.0,0.0],
         vec![1.0],
-        vec![1.0],
-        vec![1.0],
-        "grid_expensive".to_string(),
+        "grid_2".to_string(),
     )));
     entities.push(Entity::Grid(Grid::new(
-        vec![0.0],
+        vec![0.0,1.0],
         vec![1.0],
-        vec![0.0],
+        vec![0.0,1.0],
         vec![1.0],
-        "grid_free".to_string(),
+        "grid_1".to_string(),
     )));
     entities.push(Entity::Consumer(Consumer::new(
         vec![0.0],
         vec![1.0],
-        vec![0.0, 1.0],
+        vec![1.0],
         "consumer".to_string(),
     )));
     
@@ -217,26 +217,26 @@ fn two_grids_and_consumer() {
         _ => panic!("Expected Consumer"),
     };
 
-    let grid_free = match unwrapped_result.pop().unwrap() {
+    let grid_1 = match unwrapped_result.pop().unwrap() {
         Entity::Grid(grid) => {
-            assert_eq!(grid.name, "grid_free");
+            assert_eq!(grid.name, "grid_1");
             grid
         },
         _ => panic!("Expected Grid"),
     };
 
-    let grid_expensive = match unwrapped_result.pop().unwrap() {
+    let grid_2 = match unwrapped_result.pop().unwrap() {
         Entity::Grid(grid) => {
-            assert_eq!(grid.name, "grid_expensive");
+            assert_eq!(grid.name, "grid_2");
             grid
         },
         _ => panic!("Expected Grid"),
     };
 
-    assert_eq!(consumer.consumed, vec![0.0, 1.0, 0.0, 1.0]);
-    assert_eq!(grid_free.consumed, vec![0.0, 0.0, 0.0, 0.0]);
-    assert_eq!(grid_free.produced, vec![0.0, 1.0, 0.0, 1.0]);
+    assert_eq!(consumer.consumed, vec![1.0, 1.0, 1.0, 1.0]);
+    assert_eq!(grid_1.consumed, vec![0.0, 0.0, 0.0, 0.0]);
+    assert_eq!(grid_1.produced, vec![1.0, 0.0, 1.0, 0.0]);
 
-    assert_eq!(grid_expensive.consumed, vec![0.0, 0.0, 0.0, 0.0]);
-    assert_eq!(grid_expensive.produced, vec![0.0, 0.0, 0.0, 0.0]);
+    assert_eq!(grid_2.consumed, vec![0.0, 0.0, 0.0, 0.0]);
+    assert_eq!(grid_2.produced, vec![0.0, 1.0, 0.0, 1.0]);
 }

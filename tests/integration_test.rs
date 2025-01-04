@@ -17,7 +17,37 @@ fn not_connected_grid() {
     let result = solve(entities, timesteps);
     assert_eq!(result.is_ok(), true);
 
-    let grid = match result.unwrap().pop().unwrap() {
+    let mut unwrapped_result = result.unwrap();
+
+    let grid = match unwrapped_result.pop().unwrap() {
+        Entity::Grid(grid) => grid,
+        _ => panic!("Expected Grid"),
+    };
+
+    assert_eq!(grid.consumed, vec![0.0, 0.0, 0.0, 0.0]);
+    assert_eq!(grid.produced, vec![0.0, 0.0, 0.0, 0.0]);
+}
+
+#[test]
+fn not_connected_grid_negative_price() {
+
+    let mut entities: Vec<Entity> = vec![];
+    let timesteps = 4;
+
+    entities.push(Entity::Grid(Grid::new(
+        vec![-1.0],
+        vec![1.0],
+        vec![0.0],
+        vec![1.0],
+        "grid".to_string(),
+    )));
+    
+    let result = solve(entities, timesteps);
+    assert_eq!(result.is_ok(), true);
+
+    let mut unwrapped_result = result.unwrap();
+
+    let grid = match unwrapped_result.pop().unwrap() {
         Entity::Grid(grid) => grid,
         _ => panic!("Expected Grid"),
     };
@@ -148,4 +178,65 @@ fn consumer_and_producer() {
     assert_eq!(consumer.consumed, vec![0.0, 1.0, 0.0, 1.0]);
     assert_eq!(producer.produced, vec![0.0, 1.0, 0.0, 1.0]);
 
+}
+
+
+#[test]
+fn two_grids_and_consumer() {
+    let mut entities: Vec<Entity> = vec![];
+    let timesteps = 4;
+
+    entities.push(Entity::Grid(Grid::new(
+        vec![1.0],
+        vec![1.0],
+        vec![1.0],
+        vec![1.0],
+        "grid_expensive".to_string(),
+    )));
+    entities.push(Entity::Grid(Grid::new(
+        vec![0.0],
+        vec![1.0],
+        vec![0.0],
+        vec![1.0],
+        "grid_free".to_string(),
+    )));
+    entities.push(Entity::Consumer(Consumer::new(
+        vec![0.0],
+        vec![1.0],
+        vec![0.0, 1.0],
+        "consumer".to_string(),
+    )));
+    
+    let result = solve(entities, timesteps);
+    assert_eq!(result.is_ok(), true);
+
+    let mut unwrapped_result = result.unwrap();
+
+    let consumer = match unwrapped_result.pop().unwrap() {
+        Entity::Consumer(consumer) => consumer,
+        _ => panic!("Expected Consumer"),
+    };
+
+    let grid_free = match unwrapped_result.pop().unwrap() {
+        Entity::Grid(grid) => {
+            assert_eq!(grid.name, "grid_free");
+            grid
+        },
+        _ => panic!("Expected Grid"),
+    };
+
+    let grid_expensive = match unwrapped_result.pop().unwrap() {
+        Entity::Grid(grid) => {
+            assert_eq!(grid.name, "grid_expensive");
+            grid
+        },
+        _ => panic!("Expected Grid"),
+    };
+
+    assert_eq!(consumer.consumed, vec![0.0, 1.0, 0.0, 1.0]);
+    assert_eq!(grid_free.consumed, vec![0.0, 0.0, 0.0, 0.0]);
+    assert_eq!(grid_free.produced, vec![0.0, 1.0, 0.0, 1.0]);
+
+    assert_eq!(grid_expensive.consumed, vec![0.0, 0.0, 0.0, 0.0]);
+    assert_eq!(grid_expensive.produced, vec![0.0, 0.0, 0.0, 0.0]);
 }

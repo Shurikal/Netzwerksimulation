@@ -140,6 +140,7 @@ pub struct Storage {
     pub storage_capacity: f64,
     pub start_capacity: f64,
     pub storage_to_grid_allowed: bool,
+    pub grid_to_storage_allowed: bool,
 
     pub name: String,
 
@@ -171,6 +172,7 @@ impl Storage {
         storage_capacity: f64,
         start_capacity: f64,
         storage_to_grid_allowed: bool,
+        grid_to_storage_allowed: bool,
 
         name: String,
     ) -> Self {
@@ -197,6 +199,7 @@ impl Storage {
             storage_capacity,
             start_capacity,
             storage_to_grid_allowed,
+            grid_to_storage_allowed,
 
             name,
 

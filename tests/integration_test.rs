@@ -81,6 +81,7 @@ fn consumer_and_storage() {
         20.0,
         20.0,
         false,
+        false,
         "storage".to_string(),
     )));
     entities.push(Entity::Consumer(Consumer::new(
@@ -174,6 +175,7 @@ fn storage_to_grid_allowed() {
         20.0,
         20.0,
         true,
+        false,
         "storage".to_string(),
     )));
     
@@ -221,6 +223,7 @@ fn storage_to_grid_not_allowed() {
         vec![1.0],
         20.0,
         20.0,
+        false,
         false,
         "storage".to_string(),
     )));

@@ -165,6 +165,15 @@ pub fn solve(mut entities: Vec<Entity>, timesteps: usize) -> Result<Vec<Entity>,
                     );
                 }
             }
+            if !storage.grid_to_storage_allowed {
+                for grid in &grids {
+                    constraints.push(
+                        (1.0 * grid.producing_var[timestep]
+                            + (1.0 - storage.producing_var[timestep]))
+                            .leq(1.0),
+                    );
+                }
+            }
         }
     }
 

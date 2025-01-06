@@ -1,12 +1,14 @@
 use std::error::Error;
 
-use good_lp::{
-    highs, variable, variables, Constraint, Expression, Solution, SolverModel,
-};
+use good_lp::{highs, variable, variables, Constraint, Expression, Solution, SolverModel};
 
 use crate::Entity;
 
-pub fn solve(mut entities: Vec<Entity>, timesteps: usize) -> Result<Vec<Entity>, Box<dyn Error>> {
+pub fn solve(
+    mut entities: Vec<Entity>,
+    timesteps: usize,
+    storage_to_grid_allowed: bool,
+) -> Result<Vec<Entity>, Box<dyn Error>> {
     let mut to_minimize: Expression = 0.into();
 
     let mut constraints: Vec<Constraint> = vec![];
@@ -50,8 +52,18 @@ pub fn solve(mut entities: Vec<Entity>, timesteps: usize) -> Result<Vec<Entity>,
                         * producer.get_power_prod(timestep);
                 }
                 Entity::Storage(storage) => {
-                    let consumed = problem_vars.add(variable().min(0).max(1.0).name(format!("{}-{}-c", storage.name, timestep)));
-                    let produced = problem_vars.add(variable().min(0).max(1.0).name(format!("{}-{}-p", storage.name, timestep)));
+                    let consumed = problem_vars.add(
+                        variable()
+                            .min(0)
+                            .max(1.0)
+                            .name(format!("{}-{}-c", storage.name, timestep)),
+                    );
+                    let produced = problem_vars.add(
+                        variable()
+                            .min(0)
+                            .max(1.0)
+                            .name(format!("{}-{}-p", storage.name, timestep)),
+                    );
 
                     storage.consumed_var.push(consumed);
                     storage.produced_var.push(produced);
@@ -59,20 +71,27 @@ pub fn solve(mut entities: Vec<Entity>, timesteps: usize) -> Result<Vec<Entity>,
                     let mut storage_min_eq: Expression = 0.into();
                     let mut storage_max_eq: Expression = 0.into();
 
-                    let mutually_exclusive = problem_vars.add(variable().binary());
+                    let producing = problem_vars.add(variable().binary());
+                    storage.producing_var.push(producing);
 
                     // Constraints to enforce mutual exclusivity
-                    constraints.push((1.0 * produced).leq(1.0 * mutually_exclusive)); // produced <= binary_var
-                    constraints.push((1.0 * consumed).leq(1.0 * (1.0 - mutually_exclusive))); // consumed <= 1 - binary_var
+                    constraints.push((1.0 * produced).leq(1.0 * producing)); // produced <= binary_var
+                    constraints.push((1.0 * consumed).leq(1.0 * (1.0 - producing))); // consumed <= 1 - binary_var
 
                     storage_min_eq += storage.start_capacity;
                     storage_max_eq += storage.start_capacity;
-                    
-                    // storage balance
-                    for j in 0..timestep+1 {
-                        storage_min_eq += storage.consumed_var[j] * storage.get_eff_cons(j) * storage.get_power_cons(timestep) - storage.produced_var[j] * storage.get_power_prod(timestep);
 
-                        storage_max_eq += storage.consumed_var[j] * storage.get_eff_cons(j) * storage.get_power_cons(timestep) - storage.produced_var[j] * storage.get_power_prod(timestep);
+                    // storage balance
+                    for j in 0..timestep + 1 {
+                        storage_min_eq += storage.consumed_var[j]
+                            * storage.get_eff_cons(j)
+                            * storage.get_power_cons(timestep)
+                            - storage.produced_var[j] * storage.get_power_prod(timestep);
+
+                        storage_max_eq += storage.consumed_var[j]
+                            * storage.get_eff_cons(j)
+                            * storage.get_power_cons(timestep)
+                            - storage.produced_var[j] * storage.get_power_prod(timestep);
                     }
 
                     constraints.push(storage_min_eq.geq(0));
@@ -97,12 +116,12 @@ pub fn solve(mut entities: Vec<Entity>, timesteps: usize) -> Result<Vec<Entity>,
                     grid.consumed_var.push(consumed);
                     grid.produced_var.push(produced);
 
-
-                    let mutually_exclusive = problem_vars.add(variable().binary());
+                    let producing = problem_vars.add(variable().binary());
+                    grid.producing_var.push(producing);
 
                     // Constraints to enforce mutual exclusivity
-                    constraints.push((1.0 * produced).leq(1.0 * mutually_exclusive)); // produced <= binary_var
-                    constraints.push((1.0 * consumed).leq(1.0 * (1.0 - mutually_exclusive))); // consumed <= 1 - binary_var
+                    constraints.push((1.0 * produced).leq(1.0 * producing)); // produced <= binary_var
+                    constraints.push((1.0 * consumed).leq(1.0 * (1.0 - producing))); // consumed <= 1 - binary_var
 
                     node_eq += produced * grid.get_power_prod(timestep)
                         - consumed * grid.get_power_cons(timestep);
@@ -116,13 +135,47 @@ pub fn solve(mut entities: Vec<Entity>, timesteps: usize) -> Result<Vec<Entity>,
         }
 
         constraints.push(node_eq.eq(0).set_name(format!("Kirchhoff @{}", timestep)));
+
+        if !storage_to_grid_allowed {
+            // Storage is not allowed to discharge into grids
+            let storages: Vec<_> = entities
+                .iter()
+                .filter_map(|e| {
+                    if let Entity::Storage(storage) = e {
+                        Some(storage)
+                    } else {
+                        None
+                    }
+                })
+                .collect();
+
+            let grids: Vec<_> = entities
+                .iter()
+                .filter_map(|e| {
+                    if let Entity::Grid(grid) = e {
+                        Some(grid)
+                    } else {
+                        None
+                    }
+                })
+                .collect();
+
+            for storage in &storages {
+                for grid in &grids {
+                    constraints.push(
+                        (1.0 * storage.producing_var[timestep]
+                            + (1.0 - grid.producing_var[timestep]))
+                            .leq(1.0),
+                    );
+                }
+            }
+        }
     }
 
     let solution = constraints.into_iter().fold(
         problem_vars.minimise(to_minimize).using(highs),
         |solution, constraint| solution.with(constraint),
     );
-
 
     let solution = solution.solve();
 
@@ -157,7 +210,9 @@ pub fn solve(mut entities: Vec<Entity>, timesteps: usize) -> Result<Vec<Entity>,
                             );
 
                             storage.produced.push(
-                                solution.value(storage.produced_var[i]) * storage.get_power_prod(i) * storage.get_eff_prod(i),
+                                solution.value(storage.produced_var[i])
+                                    * storage.get_power_prod(i)
+                                    * storage.get_eff_prod(i),
                             );
 
                             stored += storage.consumed[i] * storage.get_eff_cons(i)

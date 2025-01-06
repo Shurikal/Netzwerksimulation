@@ -14,7 +14,7 @@ fn not_connected_grid() {
         "grid".to_string(),
     )));
     
-    let result = solve(entities, timesteps);
+    let result = solve(entities, timesteps, false);
     assert_eq!(result.is_ok(), true);
 
     let grid = match result.unwrap().pop().unwrap() {
@@ -46,7 +46,7 @@ fn grid_and_consumer() {
         "consumer".to_string(),
     )));
     
-    let result = solve(entities, timesteps);
+    let result = solve(entities, timesteps, false);
     assert_eq!(result.is_ok(), true);
 
     let mut unwrapped_result = result.unwrap();
@@ -89,7 +89,7 @@ fn consumer_and_storage() {
         "consumer".to_string(),
     )));
     
-    let result = solve(entities, timesteps);
+    let result = solve(entities, timesteps, false);
     assert_eq!(result.is_ok(), true);
 
     let mut unwrapped_result = result.unwrap();
@@ -130,7 +130,7 @@ fn consumer_and_producer() {
         "consumer".to_string(),
     )));
     
-    let result = solve(entities, timesteps);
+    let result = solve(entities, timesteps, false);
     assert_eq!(result.is_ok(), true);
 
     let mut unwrapped_result = result.unwrap();
@@ -147,5 +147,99 @@ fn consumer_and_producer() {
 
     assert_eq!(consumer.consumed, vec![0.0, 1.0, 0.0, 1.0]);
     assert_eq!(producer.produced, vec![0.0, 1.0, 0.0, 1.0]);
+
+}
+
+#[test]
+fn storage_to_grid_allowed() {
+
+    let mut entities: Vec<Entity> = vec![];
+    let timesteps = 4;
+
+    entities.push(Entity::Grid(Grid::new(
+        vec![-1.0],
+        vec![1.0],
+        vec![0.0],
+        vec![1.0],
+        "grid".to_string(),
+    )));
+    entities.push(Entity::Storage(Storage::new(
+        vec![0.0],
+        vec![1.0],
+        vec![1.0],
+        vec![0.0],
+        vec![1.0],
+        vec![1.0],
+        20.0,
+        20.0,
+        "storage".to_string(),
+    )));
+    
+    let result = solve(entities, timesteps, true);
+    assert_eq!(result.is_ok(), true);
+
+    let mut unwrapped_result = result.unwrap();
+
+    let storage = match unwrapped_result.pop().unwrap() {
+        Entity::Storage(storage) => storage,
+        _ => panic!("Expected Storage"),
+    };
+
+    let grid = match unwrapped_result.pop().unwrap() {
+        Entity::Grid(grid) => grid,
+        _ => panic!("Expected Grid"),
+    };
+
+    println!("storage: {:?}", storage.stored);
+
+    assert_eq!(storage.produced, vec![1.0, 1.0, 1.0, 1.0]);
+    assert_eq!(grid.consumed, vec![1.0, 1.0, 1.0, 1.0]);
+
+}
+
+#[test]
+fn storage_to_grid_not_allowed() {
+
+    let mut entities: Vec<Entity> = vec![];
+    let timesteps = 4;
+
+    entities.push(Entity::Grid(Grid::new(
+        vec![-1.0],
+        vec![1.0],
+        vec![0.0],
+        vec![1.0],
+        "grid".to_string(),
+    )));
+    entities.push(Entity::Storage(Storage::new(
+        vec![0.0],
+        vec![1.0],
+        vec![1.0],
+        vec![0.0],
+        vec![1.0],
+        vec![1.0],
+        20.0,
+        20.0,
+        "storage".to_string(),
+    )));
+    
+    let result = solve(entities, timesteps, false);
+    assert_eq!(result.is_ok(), true);
+
+    let mut unwrapped_result = result.unwrap();
+
+    let storage = match unwrapped_result.pop().unwrap() {
+        Entity::Storage(storage) => storage,
+        _ => panic!("Expected Storage"),
+    };
+
+    let grid = match unwrapped_result.pop().unwrap() {
+        Entity::Grid(grid) => grid,
+        _ => panic!("Expected Grid"),
+    };
+
+    println!("storage: {:?}", storage.stored);
+
+    assert_eq!(storage.produced, vec![0.0, 0.0, 0.0, 0.0]);
+    assert_eq!(grid.consumed, vec![0.0, 0.0, 0.0, 0.0]);
 
 }

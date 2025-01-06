@@ -28,6 +28,9 @@ pub struct EntityJson {
 pub struct SolverJson {
     pub entities: Vec<EntityJson>,
     pub timesteps: usize,
+
+    #[serde(default)]
+    pub storage_to_grid_allowed: bool,
 }
 
 fn main() {
@@ -132,8 +135,9 @@ fn main() {
     }
 
     let timesteps: usize = solver_json.timesteps;
+    let storage_to_grid_allowed = solver_json.storage_to_grid_allowed;
 
-    let result = solve(entities, timesteps);
+    let result = solve(entities, timesteps,storage_to_grid_allowed);
 
     match result {
         Ok(entities) => {

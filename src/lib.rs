@@ -147,6 +147,9 @@ pub struct Storage {
     #[serde(skip_serializing)]
     pub consumed_var: Vec<Variable>,
 
+    #[serde(skip_serializing)]
+    pub producing_var: Vec<Variable>,
+
     pub produced: Vec<f64>,
     pub consumed: Vec<f64>,
     pub stored: Vec<f64>,
@@ -195,6 +198,7 @@ impl Storage {
 
             produced_var: vec![],
             consumed_var: vec![],
+            producing_var: vec![],
             produced: vec![],
             consumed: vec![],
             stored: vec![],
@@ -249,6 +253,9 @@ pub struct Grid {
     #[serde(skip_serializing)]
     pub consumed_var: Vec<Variable>,
 
+    #[serde(skip_serializing)]
+    pub producing_var: Vec<Variable>,
+
     pub produced: Vec<f64>,
     pub consumed: Vec<f64>,
 
@@ -274,6 +281,7 @@ impl Grid {
 
             produced_var: vec![],
             consumed_var: vec![],
+            producing_var: vec![],
             produced: vec![],
             consumed: vec![],
             entity_type: "Grid".to_string(),

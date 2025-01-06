@@ -13,6 +13,12 @@ pub fn solve(mut entities: Vec<Entity>, timesteps: usize) -> Result<Vec<Entity>,
     for timestep in 0..timesteps {
         let mut node_eq: Expression = 0.into();
 
+        let mut produced_eq: Expression = 0.into();
+        let mut consumed_eq: Expression = 0.into();
+
+        let mut produced_storage_eq: Expression = 0.into();
+        let mut consumed_storage_eq: Expression = 0.into();
+
         for entity in entities.iter_mut() {
             match entity {
                 Entity::Consumer(consumer) => {
@@ -27,6 +33,8 @@ pub fn solve(mut entities: Vec<Entity>, timesteps: usize) -> Result<Vec<Entity>,
                     // Consumers need the power demanded
                     constraints.push((1.0 * consumed).eq(1.0));
 
+                    consumed_eq += 1.0 *consumed * consumer.get_power_cons(timestep) / consumer.get_eff_cons(timestep);
+
                     to_minimize += consumed
                         * consumer.get_cost_cons(timestep)
                         * consumer.get_power_cons(timestep);
@@ -39,6 +47,8 @@ pub fn solve(mut entities: Vec<Entity>, timesteps: usize) -> Result<Vec<Entity>,
                     if !producer.can_be_disabled {
                         constraints.push((1.0 * produced).eq(1.0));
                     }
+
+                    produced_eq += 1.0 * produced * producer.get_power_prod(timestep) / producer.get_eff_prod(timestep);
 
                     node_eq += produced
                         * producer.get_power_prod(timestep)
@@ -76,6 +86,16 @@ pub fn solve(mut entities: Vec<Entity>, timesteps: usize) -> Result<Vec<Entity>,
 
                     storage_min_eq += storage.start_capacity;
                     storage_max_eq += storage.start_capacity;
+
+                    consumed_eq += 1.0 * consumed * storage.get_power_cons(timestep) / storage.get_eff_cons(timestep);
+                    produced_eq += 1.0 * produced * storage.get_power_prod(timestep) / storage.get_eff_prod(timestep);
+
+                    if !storage.storage_to_grid_allowed {
+                        produced_storage_eq += 1.0 * produced * storage.get_power_prod(timestep) / storage.get_eff_prod(timestep);
+                    }
+                    if !storage.grid_to_storage_allowed {
+                        consumed_storage_eq += 1.0 * consumed * storage.get_power_cons(timestep) / storage.get_eff_cons(timestep);
+                    }
 
                     // storage balance
                     for j in 0..timestep + 1 {
@@ -132,49 +152,8 @@ pub fn solve(mut entities: Vec<Entity>, timesteps: usize) -> Result<Vec<Entity>,
 
         constraints.push(node_eq.eq(0).set_name(format!("Kirchhoff @{}", timestep)));
 
-        // Storage is not allowed to discharge into grids
-        let storages: Vec<_> = entities
-            .iter()
-            .filter_map(|e| {
-                if let Entity::Storage(storage) = e {
-                    Some(storage)
-                } else {
-                    None
-                }
-            })
-            .collect();
-
-        let grids: Vec<_> = entities
-            .iter()
-            .filter_map(|e| {
-                if let Entity::Grid(grid) = e {
-                    Some(grid)
-                } else {
-                    None
-                }
-            })
-            .collect();
-
-        for storage in &storages {
-            if !storage.storage_to_grid_allowed {
-                for grid in &grids {
-                    constraints.push(
-                        (1.0 * storage.producing_var[timestep]
-                            + (1.0 - grid.producing_var[timestep]))
-                            .leq(1.0),
-                    );
-                }
-            }
-            if !storage.grid_to_storage_allowed {
-                for grid in &grids {
-                    constraints.push(
-                        (1.0 * grid.producing_var[timestep]
-                            + (1.0 - storage.producing_var[timestep]))
-                            .leq(1.0),
-                    );
-                }
-            }
-        }
+        constraints.push(produced_eq.geq(consumed_storage_eq).set_name(format!("Storage @{}", timestep)));
+        constraints.push(consumed_eq.geq(produced_storage_eq).set_name(format!("Storage @{}", timestep)));
     }
 
     let solution = constraints.into_iter().fold(

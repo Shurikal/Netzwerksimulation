@@ -18,6 +18,8 @@ pub struct EntityJson {
     pub storage_capacity: Option<f64>,
     pub start_capacity: Option<f64>,
 
+    pub storage_to_grid_allowed: Option<bool>,
+
     pub consumed: Option<Vec<f64>>,
     pub produced: Option<Vec<f64>>,
 
@@ -28,9 +30,6 @@ pub struct EntityJson {
 pub struct SolverJson {
     pub entities: Vec<EntityJson>,
     pub timesteps: usize,
-
-    #[serde(default)]
-    pub storage_to_grid_allowed: bool,
 }
 
 fn main() {
@@ -124,6 +123,7 @@ fn main() {
                     entity
                         .start_capacity
                         .expect(format!("{} is missing start_capacity", entity.name).as_str()),
+                    entity.storage_to_grid_allowed.unwrap_or(false),
                     entity.name,
                 );
                 entities.push(Entity::Storage(storage));
@@ -135,9 +135,8 @@ fn main() {
     }
 
     let timesteps: usize = solver_json.timesteps;
-    let storage_to_grid_allowed = solver_json.storage_to_grid_allowed;
 
-    let result = solve(entities, timesteps,storage_to_grid_allowed);
+    let result = solve(entities, timesteps);
 
     match result {
         Ok(entities) => {

@@ -4,11 +4,7 @@ use good_lp::{highs, variable, variables, Constraint, Expression, Solution, Solv
 
 use crate::Entity;
 
-pub fn solve(
-    mut entities: Vec<Entity>,
-    timesteps: usize,
-    storage_to_grid_allowed: bool,
-) -> Result<Vec<Entity>, Box<dyn Error>> {
+pub fn solve(mut entities: Vec<Entity>, timesteps: usize) -> Result<Vec<Entity>, Box<dyn Error>> {
     let mut to_minimize: Expression = 0.into();
 
     let mut constraints: Vec<Constraint> = vec![];
@@ -136,31 +132,31 @@ pub fn solve(
 
         constraints.push(node_eq.eq(0).set_name(format!("Kirchhoff @{}", timestep)));
 
-        if !storage_to_grid_allowed {
-            // Storage is not allowed to discharge into grids
-            let storages: Vec<_> = entities
-                .iter()
-                .filter_map(|e| {
-                    if let Entity::Storage(storage) = e {
-                        Some(storage)
-                    } else {
-                        None
-                    }
-                })
-                .collect();
+        // Storage is not allowed to discharge into grids
+        let storages: Vec<_> = entities
+            .iter()
+            .filter_map(|e| {
+                if let Entity::Storage(storage) = e {
+                    Some(storage)
+                } else {
+                    None
+                }
+            })
+            .collect();
 
-            let grids: Vec<_> = entities
-                .iter()
-                .filter_map(|e| {
-                    if let Entity::Grid(grid) = e {
-                        Some(grid)
-                    } else {
-                        None
-                    }
-                })
-                .collect();
+        let grids: Vec<_> = entities
+            .iter()
+            .filter_map(|e| {
+                if let Entity::Grid(grid) = e {
+                    Some(grid)
+                } else {
+                    None
+                }
+            })
+            .collect();
 
-            for storage in &storages {
+        for storage in &storages {
+            if !storage.storage_to_grid_allowed {
                 for grid in &grids {
                     constraints.push(
                         (1.0 * storage.producing_var[timestep]

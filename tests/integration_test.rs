@@ -14,7 +14,7 @@ fn not_connected_grid() {
         "grid".to_string(),
     )));
     
-    let result = solve(entities, timesteps, false);
+    let result = solve(entities, timesteps);
     assert_eq!(result.is_ok(), true);
 
     let grid = match result.unwrap().pop().unwrap() {
@@ -46,7 +46,7 @@ fn grid_and_consumer() {
         "consumer".to_string(),
     )));
     
-    let result = solve(entities, timesteps, false);
+    let result = solve(entities, timesteps);
     assert_eq!(result.is_ok(), true);
 
     let mut unwrapped_result = result.unwrap();
@@ -80,6 +80,7 @@ fn consumer_and_storage() {
         vec![1.0],
         20.0,
         20.0,
+        false,
         "storage".to_string(),
     )));
     entities.push(Entity::Consumer(Consumer::new(
@@ -89,7 +90,7 @@ fn consumer_and_storage() {
         "consumer".to_string(),
     )));
     
-    let result = solve(entities, timesteps, false);
+    let result = solve(entities, timesteps);
     assert_eq!(result.is_ok(), true);
 
     let mut unwrapped_result = result.unwrap();
@@ -130,7 +131,7 @@ fn consumer_and_producer() {
         "consumer".to_string(),
     )));
     
-    let result = solve(entities, timesteps, false);
+    let result = solve(entities, timesteps);
     assert_eq!(result.is_ok(), true);
 
     let mut unwrapped_result = result.unwrap();
@@ -172,10 +173,11 @@ fn storage_to_grid_allowed() {
         vec![1.0],
         20.0,
         20.0,
+        true,
         "storage".to_string(),
     )));
     
-    let result = solve(entities, timesteps, true);
+    let result = solve(entities, timesteps);
     assert_eq!(result.is_ok(), true);
 
     let mut unwrapped_result = result.unwrap();
@@ -219,10 +221,11 @@ fn storage_to_grid_not_allowed() {
         vec![1.0],
         20.0,
         20.0,
+        false,
         "storage".to_string(),
     )));
     
-    let result = solve(entities, timesteps, false);
+    let result = solve(entities, timesteps);
     assert_eq!(result.is_ok(), true);
 
     let mut unwrapped_result = result.unwrap();

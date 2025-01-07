@@ -116,7 +116,7 @@ pub fn solve(mut entities: Vec<Entity>, timesteps: usize) -> Result<Vec<Entity>,
                     node_eq += produced
                         * storage.get_power_prod(timestep)
                         * storage.get_eff_prod(timestep)
-                        - consumed * storage.get_power_cons(timestep);
+                        - consumed * storage.get_power_cons(timestep) / storage.get_eff_cons(timestep);
 
                     to_minimize += consumed
                         * storage.get_cost_cons(timestep)

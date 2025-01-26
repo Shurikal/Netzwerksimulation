@@ -100,6 +100,17 @@ fn main() {
                 entities.push(Entity::Producer(producer));
             }
             "Storage" => {
+
+                if entity.end_capacity.is_some() {
+                    let end_capacity = entity.end_capacity.unwrap();
+                    if end_capacity < 0.0 {
+                        panic!("end_capacity must be greater than or equal to 0.0");
+                    }
+                    if end_capacity > entity.storage_capacity.unwrap() {
+                        panic!("end_capacity must be less than or equal to storage_capacity");
+                    }
+                }
+
                 let storage = Storage::new(
                     entity
                         .cost_cons

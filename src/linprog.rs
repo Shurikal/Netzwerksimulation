@@ -110,6 +110,18 @@ pub fn solve(mut entities: Vec<Entity>, timesteps: usize) -> Result<Vec<Entity>,
                             - storage.produced_var[j] * storage.get_power_prod(timestep);
                     }
 
+                    if storage.end_capacity.is_some() && timestep == timesteps - 1 {
+                        let mut end_storage_eq: Expression = 0.into();
+                        end_storage_eq += storage.start_capacity;
+                        for j in 0..timestep + 1 {
+                            end_storage_eq += storage.consumed_var[j]
+                                * storage.get_eff_cons(j)
+                                * storage.get_power_cons(timestep)
+                                - storage.produced_var[j] * storage.get_power_prod(timestep);
+                        }
+                        constraints.push(end_storage_eq.eq(storage.end_capacity.unwrap()));
+                    }
+
                     constraints.push(storage_min_eq.geq(0));
                     constraints.push(storage_max_eq.leq(storage.storage_capacity));
 

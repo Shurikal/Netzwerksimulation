@@ -17,6 +17,7 @@ pub struct EntityJson {
     pub can_be_disabled: Option<bool>,
     pub storage_capacity: Option<f64>,
     pub start_capacity: Option<f64>,
+    pub end_capacity: Option<f64>,
 
     pub storage_to_grid_allowed: Option<bool>,
     pub grid_to_storage_allowed: Option<bool>,
@@ -124,6 +125,7 @@ fn main() {
                     entity
                         .start_capacity
                         .expect(format!("{} is missing start_capacity", entity.name).as_str()),
+                    entity.end_capacity,
                     entity.storage_to_grid_allowed.unwrap_or(false),
                     entity.grid_to_storage_allowed.unwrap_or(false),
                     entity.name,

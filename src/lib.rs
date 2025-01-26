@@ -145,6 +145,9 @@ pub struct Storage {
     pub name: String,
 
     #[serde(skip_serializing)]
+    pub end_capacity: Option<f64>,
+
+    #[serde(skip_serializing)]
     pub produced_var: Vec<Variable>,
     #[serde(skip_serializing)]
     pub consumed_var: Vec<Variable>,
@@ -171,6 +174,8 @@ impl Storage {
 
         storage_capacity: f64,
         start_capacity: f64,
+
+        end_capacity: Option<f64>,
         storage_to_grid_allowed: bool,
         grid_to_storage_allowed: bool,
 
@@ -198,6 +203,7 @@ impl Storage {
 
             storage_capacity,
             start_capacity,
+            end_capacity,
             storage_to_grid_allowed,
             grid_to_storage_allowed,
 

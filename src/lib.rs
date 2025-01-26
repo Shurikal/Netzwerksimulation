@@ -139,6 +139,8 @@ pub struct Storage {
 
     pub storage_capacity: f64,
     pub start_capacity: f64,
+    pub storage_to_grid_allowed: bool,
+    pub grid_to_storage_allowed: bool,
 
     pub name: String,
 
@@ -146,6 +148,9 @@ pub struct Storage {
     pub produced_var: Vec<Variable>,
     #[serde(skip_serializing)]
     pub consumed_var: Vec<Variable>,
+
+    #[serde(skip_serializing)]
+    pub producing_var: Vec<Variable>,
 
     pub produced: Vec<f64>,
     pub consumed: Vec<f64>,
@@ -166,6 +171,8 @@ impl Storage {
 
         storage_capacity: f64,
         start_capacity: f64,
+        storage_to_grid_allowed: bool,
+        grid_to_storage_allowed: bool,
 
         name: String,
     ) -> Self {
@@ -191,10 +198,14 @@ impl Storage {
 
             storage_capacity,
             start_capacity,
+            storage_to_grid_allowed,
+            grid_to_storage_allowed,
+
             name,
 
             produced_var: vec![],
             consumed_var: vec![],
+            producing_var: vec![],
             produced: vec![],
             consumed: vec![],
             stored: vec![],
@@ -249,6 +260,9 @@ pub struct Grid {
     #[serde(skip_serializing)]
     pub consumed_var: Vec<Variable>,
 
+    #[serde(skip_serializing)]
+    pub producing_var: Vec<Variable>,
+
     pub produced: Vec<f64>,
     pub consumed: Vec<f64>,
 
@@ -274,6 +288,7 @@ impl Grid {
 
             produced_var: vec![],
             consumed_var: vec![],
+            producing_var: vec![],
             produced: vec![],
             consumed: vec![],
             entity_type: "Grid".to_string(),

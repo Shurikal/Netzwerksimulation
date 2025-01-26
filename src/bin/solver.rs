@@ -18,6 +18,9 @@ pub struct EntityJson {
     pub storage_capacity: Option<f64>,
     pub start_capacity: Option<f64>,
 
+    pub storage_to_grid_allowed: Option<bool>,
+    pub grid_to_storage_allowed: Option<bool>,
+
     pub consumed: Option<Vec<f64>>,
     pub produced: Option<Vec<f64>>,
 
@@ -121,6 +124,8 @@ fn main() {
                     entity
                         .start_capacity
                         .expect(format!("{} is missing start_capacity", entity.name).as_str()),
+                    entity.storage_to_grid_allowed.unwrap_or(false),
+                    entity.grid_to_storage_allowed.unwrap_or(false),
                     entity.name,
                 );
                 entities.push(Entity::Storage(storage));

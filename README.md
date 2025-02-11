@@ -94,3 +94,7 @@ Run the test suite with:
 ```bash
 cargo test
 ```
+
+# Acknowledgements
+
+This project depends on [good_lp](https://github.com/rust-or/good_lp) for formulating and solving linear programs.

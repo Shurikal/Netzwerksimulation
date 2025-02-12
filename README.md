@@ -4,34 +4,12 @@ A simulation tool for modeling a simplified electrical grid with various types o
 
 ## Features
 
-This simulation supports the following entities:
+The simulation supports the following entities:
 
 - **Grid**: Manages excess energy by producing or consuming as needed.
 - **Producer**: Generates energy with defined capacity and efficiency constraints.
 - **Consumer**: Requires energy to be supplied at specific timesteps.
 - **Storage**: Stores surplus energy for later use, with configurable charging and discharging rules.
-
-## Usage
-
-The program requires a JSON file as input, defining the entities connected to the grid. For an example, refer to [`Example.ipynb`](./Example.ipynb).
-
-### Parameter Handling
-
-All numerical parameters must be provided as arrays. The value for a given timestep is determined using the following approach:
-
-```rust
-let index = timestep % array.len();
-let value = array[index];
-return value;
-```
-
-### Defining Periodic Values
-
-- **Single-value array (`length = 1`)**: Applies a constant value across all timesteps.
-- **Hourly values (`length = 24`)**: Specifies a unique value for each hour of the day.
-- **Custom periodicities**: Arrays of varying lengths can be used to define specific repeating patterns.
-
-This flexibility allows for realistic modeling of energy consumption and production patterns.
 
 ## Entity Definitions
 
@@ -79,6 +57,24 @@ The grid is defined by the following parameters:
 - `grid_to_storage_allowed` (boolean): Whether the grid can charge the storage (default: `false`)
 - `entity_type` (string): Must be "Storage"
 
+### Parameter Handling
+
+All numerical parameters must be provided as arrays. The value for a given timestep is determined using the following approach:
+
+```rust
+let index = timestep % array.len();
+let value = array[index];
+return value;
+```
+
+### Defining Periodic Values
+
+- **Single-value array (`length = 1`)**: Applies a constant value across all timesteps.
+- **Hourly values (`length = 24`)**: Specifies a unique value for each hour of the day.
+- **Custom periodicities**: Arrays of varying lengths can be used to define specific repeating patterns.
+
+This flexibility allows for realistic modeling of energy consumption and production patterns.
+
 ## Build Instructions
 
 Compile the project using Cargo:
@@ -95,7 +91,7 @@ Run the test suite with:
 cargo test
 ```
 
-# Usage
+## Usage
 
 To use the solver, create a JSON file containing all the entities.
 The file structure is as follows:

@@ -95,6 +95,34 @@ Run the test suite with:
 cargo test
 ```
 
+# Usage
+
+To use the solver, create a JSON file containing all the entities.
+The file structure is as follows:
+
+```json
+{
+    "entities": [
+        {
+            "name": "Grid",
+            "cost_prod": [1.0],
+            "power_prod": [10.0],
+            "cost_cons": [-1.0],
+            "power_cons": [10.0],
+            "entity_type": "Grid"
+        },
+        ...
+    ],
+    "timesteps": 24
+}
+```
+
+Then, run the solver with:
+
+```bash
+./target/release/solver < path_to_json > path_to_output
+```
+
 # Acknowledgements
 
 This project depends on [good_lp](https://github.com/rust-or/good_lp) for formulating and solving linear programs.
